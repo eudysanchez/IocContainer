@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace IoCContainer
 {
-    public class Class1
+    public enum LifeCycle
     {
+        Singleton = 1,
+        Transient = 2,
     }
 }
