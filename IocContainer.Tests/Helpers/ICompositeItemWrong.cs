@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IoCContainer
+namespace IocContainer.Tests.Helpers
 {
-    public class DependencyAttribute : Attribute
+    interface ICompositeItemWrong
     {
+        void Print();
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IoCContainer
+namespace IoCContainer.ValueObjects
 {
     public enum LifeCycle
     {

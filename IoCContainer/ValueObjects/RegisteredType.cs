@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IoCContainer
+namespace IoCContainer.ValueObjects
 {
     internal class RegisteredType
     {

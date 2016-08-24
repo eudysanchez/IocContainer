@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using IoCContainer.CreationServices;
 using IoCContainer.Exceptions;
+using IoCContainer.IoCCreationServices;
+using IoCContainer.ValueObjects;
 
 namespace IoCContainer.Container
 {
@@ -111,11 +112,11 @@ namespace IoCContainer.Container
 
             if (registered.LifeCycle == LifeCycle.Transient)
             {
-                returnedObj = TransientCreationService.GetInstance().GetNewObject(typeToCreate, arguments);
+                returnedObj = CreationService.GetInstance().GetNewObject(typeToCreate, arguments);
             }
             else if (registered.LifeCycle == LifeCycle.Singleton)
             {
-                returnedObj = SingletonCreationService.GetInstance().GetSingleton(typeToCreate, arguments);
+                returnedObj = CreationService.GetInstance().GetSingleton(typeToCreate, arguments);
             }
 
             return returnedObj;
