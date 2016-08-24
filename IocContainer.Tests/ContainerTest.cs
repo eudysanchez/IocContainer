@@ -95,7 +95,7 @@ namespace IocContainer.Tests
 
 
             //Assert
-            Assert.Equal("The type IHelper1 it is not registered", ex.Message);
+            Assert.Equal("The type IHelper1 has not been registered", ex.Message);
         }
     }
 }

@@ -16,24 +16,15 @@ namespace IoCContainer.Container
             where Tinter : class
             where Timple : class
         {
-            RegisterTransientType<Tinter, Timple>(LifeCycle.Transient);
+            RegisterType<Tinter, Timple>(LifeCycle.Transient);
         }
 
         public void Register<Tinter, Timple>(LifeCycle lifeCycle)
             where Tinter : class
             where Timple : class
         {
-            RegisterTransientType<Tinter, Timple>(lifeCycle);
-
-        }
-        public void RegisterTransientType<Tinter, Timple>(LifeCycle lifeCycle)
-        {
             RegisterType<Tinter, Timple>(lifeCycle);
-        }
 
-        public void RegisterSingletonType<Tinter, Timple>(LifeCycle lifeCycle)
-        {
-            RegisterType<Tinter, Timple>(lifeCycle);
         }
 
         private void RegisterType<Tinter, Timple>(LifeCycle lifeCycle)
