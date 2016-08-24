@@ -8,5 +8,6 @@ namespace IocContainer.Tests.Helpers
 {
     interface IHelper2
     {
+        void Print();
     }
 }

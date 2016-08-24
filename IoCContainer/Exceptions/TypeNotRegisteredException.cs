@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace IoCContainer.Exceptions
 {
     [Serializable]
-    internal class TypeNotRegisteredException : Exception
+    public class TypeNotRegisteredException : Exception
     {
         public TypeNotRegisteredException() : base() { }
 

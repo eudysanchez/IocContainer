@@ -70,10 +70,12 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ContainerTest.cs" />
+    <Compile Include="Helpers\CompositeItem.cs" />
     <Compile Include="Helpers\Helper1.cs" />
     <Compile Include="Helpers\Helper2.cs" />
     <Compile Include="Helpers\IHelper1.cs" />
     <Compile Include="Helpers\IHelper2.cs" />
+    <Compile Include="Helpers\ICompositeItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

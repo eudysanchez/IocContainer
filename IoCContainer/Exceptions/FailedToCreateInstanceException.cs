@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace IoCContainer.Exceptions
 {
     [Serializable]
-    internal class FailedToCreateInstanceException : Exception
+    public class FailedToCreateInstanceException : Exception
     {
         public FailedToCreateInstanceException() : base() { }
 
