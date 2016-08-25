@@ -47,7 +47,7 @@ namespace IoCContainer.Container
 
         public Tinter Resolve<Tinter>()
         {
-            return (Tinter)Resolve(typeof(Tinter));
+            return (Tinter)ResolveAndCreate(typeof(Tinter));
         }
 
 
