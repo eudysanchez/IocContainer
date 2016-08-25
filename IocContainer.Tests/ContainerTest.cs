@@ -4,6 +4,7 @@ using IoCContainer.ContainerFolder;
 using IocContainer.Tests.Helpers;
 using IoCContainer.Exceptions;
 using IoCContainer.ValueObjects;
+using System.Reflection.Emit;
 
 namespace IocContainer.Tests
 {
@@ -15,7 +16,7 @@ namespace IocContainer.Tests
         {
             //Arrange
             IContainer container = new Container();
-            Helper1 help1 = new Helper1();
+            IHelper1 help1 = new Helper1();
 
             //Act
             container.Register<IHelper1, Helper1>();
@@ -79,6 +80,7 @@ namespace IocContainer.Tests
             container.Register<IHelper1, Helper1>();
             container.Register<IHelper1, Helper2>();
             var actualType1 = container.Resolve<IHelper1>();
+            var actualType2 = container.Resolve<IHelper1>();
 
             //Assert
             Assert.IsType(help1.GetType(), actualType1);

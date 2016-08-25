@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Container.Tests.Controllers
+namespace MvcIoC.Tests.Controllers
 {
     public class CompanyControllerTest
     {
