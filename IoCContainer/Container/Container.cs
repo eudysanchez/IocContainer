@@ -50,7 +50,19 @@ namespace IoCContainer.Container
             return (Tinter)Resolve(typeof(Tinter));
         }
 
-        private object Resolve(Type type)
+
+        public object Resolve(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException("type");
+
+            if (!instanceRegistry.ContainsKey(type))
+                throw new ArgumentException("Type not registered");
+
+           return ResolveAndCreate(type);
+        }
+
+        private object ResolveAndCreate(Type type)
         {
             object obj = null;
 
@@ -87,7 +99,7 @@ namespace IoCContainer.Container
                             foreach (var param in parameters)
                             {
                                 Type paramType = param.ParameterType;
-                                arguments.Add(Resolve(paramType));
+                                arguments.Add(ResolveAndCreate(paramType));
                             }
 
                             obj = CreateInstance(registered, arguments.ToArray());
@@ -103,7 +115,7 @@ namespace IoCContainer.Container
             }
 
             return obj;
-        } 
+        }
 
         private object CreateInstance(RegisteredType registered, object[] arguments = null)
         {
