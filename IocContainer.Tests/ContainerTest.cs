@@ -1,9 +1,8 @@
 ﻿using System;
 using Xunit;
-using IoCContainer.Container;
+using IoCContainer.ContainerFolder;
 using IocContainer.Tests.Helpers;
 using IoCContainer.Exceptions;
-using IoCContainer;
 using IoCContainer.ValueObjects;
 
 namespace IocContainer.Tests

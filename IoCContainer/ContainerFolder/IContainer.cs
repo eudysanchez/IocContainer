@@ -1,7 +1,7 @@
 ﻿using IoCContainer.ValueObjects;
 using System;
 
-namespace IoCContainer.Container
+namespace IoCContainer.ContainerFolder
 {
     public interface IContainer
     {

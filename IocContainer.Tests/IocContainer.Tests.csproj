@@ -88,6 +88,10 @@
       <Project>{7B2B6EC2-771D-41DA-98A2-0EDD9C2A1C37}</Project>
       <Name>IoCContainer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MvcIoC\MvcIoC.csproj">
+      <Project>{B52D48A6-84B6-41A6-AD7E-57DA9F8BB640}</Project>
+      <Name>MvcIoC</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

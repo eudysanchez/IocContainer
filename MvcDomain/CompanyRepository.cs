@@ -14,46 +14,51 @@ namespace MvcDomain
         public CompanyRepository()
         {
             // Add products for the Demonstration  
-            Add(new Company { Name = "TIMKEN Eng", Category = "Engenering" });
-            Add(new Company { Name = "Wipro", Category = "software" });
-            Add(new Company { Name = "HSBC", Category = "Bank" });
+            Add(new Company { Name = "Qualcomm", Category = "Engenering" });
+            Add(new Company { Name = "Uber", Category = "software" });
+            Add(new Company { Name = "Bank Of America", Category = "Bank" });
+            Add(new Company { Name = "Toyota", Category = "Car" });
+
         }
 
         public IEnumerable<Company> GetAll()
         {
             return products;
         }
+
         public Company Get(int id)
         {
             return products.Find(p => p.Id == id);
         }
-        public Company Add(Company item)
+
+        public Company Add(Company company)
         {
-            if (item == null)
+            if (company == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("The parameter company Can't be null");
             }
 
-            item.Id = _nextId++;
-            products.Add(item);
-            return item;
+            company.Id = _nextId++;
+            products.Add(company);
+            return company;
         }
-        public bool Update(Company item)
+
+        public bool Update(Company company)
         {
-            if (item == null)
+            if (company == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("The parameter company Can't be null");
             }
 
-            int index = products.FindIndex(p => p.Id == item.Id);
+            int index = products.FindIndex(p => p.Id == company.Id);
             if (index == -1)
             {
                 return false;
             }
-            products.RemoveAt(index);
-            products.Add(item);
+            products[index] = company;
             return true;
         }
+
         public bool Delete(int id)
         {
             products.RemoveAll(p => p.Id == id);

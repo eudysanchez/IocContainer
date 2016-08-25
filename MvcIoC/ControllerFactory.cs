@@ -1,4 +1,4 @@
-﻿using IoCContainer.Container;
+﻿using IoCContainer.ContainerFolder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,7 @@ namespace MvcIoC
         {
             if (controllerType == null)
                 return null;
-
+            //resolve types for the specific controller
             return _container.Resolve(controllerType) as Controller;
         }
     }

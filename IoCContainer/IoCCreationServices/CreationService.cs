@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+//Creare type intance 
 namespace IoCContainer.IoCCreationServices 
 {
     public class CreationService
@@ -24,18 +25,19 @@ namespace IoCContainer.IoCCreationServices
         {
             return instance;
         }
-
+        //returns the intance of the object
         public object GetSingleton(Type type, object[] arguments = null)
         {
             object obj = null;
 
             try
-            {
+            {   //if type is a new type, then create it and ad it to the dictionary
                 if (!registerList.ContainsKey(type.Name))
                 {
-                    obj = GetInstance().GetNewObject(type, arguments);
+                    obj = GetInstance().GetNewInstance(type, arguments);
                     registerList.Add(type.Name, obj);
                 }
+                //else, just get type from the list 
                 else
                 {
                     obj = registerList[type.Name];
@@ -50,12 +52,13 @@ namespace IoCContainer.IoCCreationServices
             return obj;
         }
 
-        public object GetNewObject(Type type, object[] arguments = null)
+        //returns a new instance of the object
+        public object GetNewInstance(Type type, object[] arguments = null)
         {
             object obj = null;
-
+            
             try
-            {
+            {//create new instance
                 obj = Activator.CreateInstance(type, arguments);
             }
             catch (Exception e)

@@ -7,19 +7,24 @@ using IoCContainer.Exceptions;
 using IoCContainer.IoCCreationServices;
 using IoCContainer.ValueObjects;
 
-namespace IoCContainer.Container
+namespace IoCContainer.ContainerFolder
 {
     public class Container : IContainer
     {
-        Dictionary<Type, RegisteredType> instanceRegistry = new Dictionary<Type, RegisteredType>();
+        Dictionary<Type, RegisteredType> _instanceRegistry;
 
+        public Container()
+        {
+            _instanceRegistry = new Dictionary<Type, RegisteredType>();
+        }
+        //register type with Transient lifeCycle by default
         public void Register<Tinter, Timple>()
             where Tinter : class
             where Timple : class
         {
             RegisterType<Tinter, Timple>(LifeCycle.Transient);
         }
-
+        //Let take the lifecyle choosen by the user
         public void Register<Tinter, Timple>(LifeCycle lifeCycle)
             where Tinter : class
             where Timple : class
@@ -27,15 +32,18 @@ namespace IoCContainer.Container
             RegisterType<Tinter, Timple>(lifeCycle);
 
         }
-
+        /*Using the container as the key, adds type to register and container to the dictionary
+         * deletes entry if type is already in the dictionary
+         * Note: this behavior needs to be updated if we want to allow various implementations to one type  
+         * */
         private void RegisterType<Tinter, Timple>(LifeCycle lifeCycle)
         {
-            if (instanceRegistry.ContainsKey(typeof(Tinter)) == true)
+            if (_instanceRegistry.ContainsKey(typeof(Tinter)) == true)
             {
-                instanceRegistry.Remove(typeof(Tinter));
+                _instanceRegistry.Remove(typeof(Tinter));
             }
 
-            instanceRegistry.Add(
+            _instanceRegistry.Add(
                 typeof(Tinter),
                     new RegisteredType
                     {
@@ -44,20 +52,16 @@ namespace IoCContainer.Container
                     }
                 );
         }
-
+        //resolve from type
         public Tinter Resolve<Tinter>()
         {
             return (Tinter)ResolveAndCreate(typeof(Tinter));
         }
-
-
+        //resolve from parameter
         public object Resolve(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException("type");
-
-            if (!instanceRegistry.ContainsKey(type))
-                throw new ArgumentException("Type not registered");
 
            return ResolveAndCreate(type);
         }
@@ -66,16 +70,16 @@ namespace IoCContainer.Container
         {
             object obj = null;
 
-            if (instanceRegistry.ContainsKey(type) == true)
+            if (_instanceRegistry.ContainsKey(type) == true)
             {
-                RegisteredType registered = instanceRegistry[type];
+                RegisteredType registered = _instanceRegistry[type];
 
                 if (registered != null)
                 {
                     Type typeToCreate = registered.ObjectType;
-
+                    //get ctro information so we can create the injected types later
                     ConstructorInfo[] ctroInfo = typeToCreate.GetConstructors();
-
+                    //verify if the ctro has any types that need to be instantiated 
                     var dependentCtor = ctroInfo.FirstOrDefault(item => item.CustomAttributes.FirstOrDefault(attr => attr.AttributeType == typeof(DependencyAttribute)) != null);
 
                     if (dependentCtor == null)
@@ -117,6 +121,7 @@ namespace IoCContainer.Container
             return obj;
         }
 
+        //create the instance dending on the lifecycle type
         private object CreateInstance(RegisteredType registered, object[] arguments = null)
         {
             object returnedObj = null;
@@ -124,7 +129,7 @@ namespace IoCContainer.Container
 
             if (registered.LifeCycle == LifeCycle.Transient)
             {
-                returnedObj = CreationService.GetInstance().GetNewObject(typeToCreate, arguments);
+                returnedObj = CreationService.GetInstance().GetNewInstance(typeToCreate, arguments);
             }
             else if (registered.LifeCycle == LifeCycle.Singleton)
             {

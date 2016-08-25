@@ -40,10 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Container\Container.cs" />
+    <Compile Include="ContainerFolder\Container.cs" />
     <Compile Include="IoCCreationServices\CreationService.cs" />
     <Compile Include="ValueObjects\DependencyAttribute.cs" />
-    <Compile Include="Container\IContainer.cs" />
+    <Compile Include="ContainerFolder\IContainer.cs" />
     <Compile Include="ValueObjects\LifeCycle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ValueObjects\RegisteredType.cs" />
