@@ -17,6 +17,7 @@ namespace IoCContainer.ContainerFolder
         {
             _instanceRegistry = new Dictionary<Type, HashSet<RegisteredType>>();
         }
+
         //register type with Transient lifeCycle by default
         public void Register<Tinter, Timple>()
             where Tinter : class
@@ -24,6 +25,7 @@ namespace IoCContainer.ContainerFolder
         {
             RegisterType<Tinter, Timple>(LifeCycle.Transient);
         }
+
         //Let take the lifecyle choosen by the user
         public void Register<Tinter, Timple>(LifeCycle lifeCycle)
             where Tinter : class
@@ -32,6 +34,7 @@ namespace IoCContainer.ContainerFolder
             RegisterType<Tinter, Timple>(lifeCycle);
 
         }
+
         /*Using the container as the key, adds type to register and container to the dictionary
          * deletes entry if type is already in the dictionary
          * Note: this behavior needs to be updated if we want to allow various implementations to one type  
@@ -60,9 +63,8 @@ namespace IoCContainer.ContainerFolder
                 _instanceRegistry.Add(
                     typeof(Tinter), new HashSet<RegisteredType> { registeredType });
             }
-
-
         }
+
         //resolve from type
         public Tinter Resolve<Tinter>()
         {
@@ -87,12 +89,11 @@ namespace IoCContainer.ContainerFolder
             //Type is not registered, throw exception
             else
             {
-
                 throw new TypeNotRegisteredException(string.Format(
                     "The type {0} has not been registered", typeof(Tinter).Name));
             }
-
         }
+
         //resolve from parameter
         public object Resolve(Type type)
         {
@@ -186,6 +187,7 @@ namespace IoCContainer.ContainerFolder
                     attr => attr.AttributeType == typeof(DependencyAttribute)) != null);
 
         }
+
         //creates ctro and it dendencies if needed.
         private void CreateCtro(RegisteredType registered, ConstructorInfo dependentCtor, out object obj)
         {
