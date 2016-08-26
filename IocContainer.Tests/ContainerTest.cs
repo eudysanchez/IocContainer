@@ -5,6 +5,8 @@ using IocContainer.Tests.Helpers;
 using IoCContainer.Exceptions;
 using IoCContainer.ValueObjects;
 using System.Reflection.Emit;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace IocContainer.Tests
 {
@@ -73,17 +75,18 @@ namespace IocContainer.Tests
         {
             //Arrange
             IContainer container = new Container();
-            Helper1 help1 = new Helper1();
-            Helper2 help2 = new Helper2();
+            IHelper1 help1 = new Helper1();
+            IHelper2 help2 = new Helper2();
 
             //Act
             container.Register<IHelper1, Helper1>();
             container.Register<IHelper1, Helper2>();
-            var actualType1 = container.ResolveAll<IHelper1>();
+            IEnumerable<Type> actualTypes = container.ResolveAll<IHelper1>();
 
             //Assert
-            Assert.IsType(help1.GetType(), actualType1);
-
+            IList<Type> list = new List<Type>(actualTypes);
+            Assert.Equal(help1.GetType().FullName, list[0].FullName);
+            Assert.Equal(help2.GetType().FullName, list[1].FullName);
         }
 
         [Fact]

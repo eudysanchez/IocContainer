@@ -11,13 +11,10 @@ namespace IoCContainer.ContainerFolder
 {
     public class Container : IContainer
     {
-        Dictionary<Type, HashSet<RegisteredType>> _instanceRegistry;
-        Dictionary<Type, RegisteredType> _processingRegistry;
-        HashSet<RegisteredType> _registeredType;
+        Dictionary<Type, HashSet<RegisteredType>> _instanceRegistry;//store all containers and all the implementation types
+        Dictionary<Type, RegisteredType> _processingRegistry;//store a specific container and all its implementations temporally
         public Container()
         {
-            _registeredType = new HashSet<RegisteredType>();
-            _processingRegistry = new Dictionary<Type, RegisteredType>();
             _instanceRegistry = new Dictionary<Type, HashSet<RegisteredType>>();
         }
         //register type with Transient lifeCycle by default
@@ -69,27 +66,30 @@ namespace IoCContainer.ContainerFolder
         //resolve from type
         public Tinter Resolve<Tinter>()
         {
-            if (_instanceRegistry.ContainsKey(typeof(Tinter)) == true)
+            //verify the container is registered 
+            if (_instanceRegistry.ContainsKey(typeof(Tinter)))
             {
-                //var registeredHash = _instanceRegistry[type];
-
+                //make sure there is just one value for the key: one interface for the implementation
                 if (_instanceRegistry[typeof(Tinter)].Count() == 1)
                 {
+                    _processingRegistry = new Dictionary<Type, RegisteredType>();
+                    _processingRegistry[typeof(Tinter)] = _instanceRegistry[typeof(Tinter)].FirstOrDefault();
                     return (Tinter)ResolveAndCreate(typeof(Tinter));
                 }
-                //Type is not registered, throw exception
+                //Type has multiple implementations, throw exception
                 else
                 {
-                    throw new TypeNotRegisteredException(string.Format(
-                        "The type {0} has not been registered", typeof(Tinter)));
+                    throw new MultipleImplementationsException(string.Format(
+                        "The type {0} has Miltuple implementations, Please use ResolveAll ", typeof(Tinter).Name));
                 }
 
             }
-            //Type has multiple implementations, throw exception
+            //Type is not registered, throw exception
             else
             {
-                throw new MultipleImplementationsException(string.Format(
-                    "The type {0} has Miltuple implementations ", typeof(Tinter)));
+
+                throw new TypeNotRegisteredException(string.Format(
+                    "The type {0} has not been registered", typeof(Tinter).Name));
             }
 
         }
@@ -99,98 +99,21 @@ namespace IoCContainer.ContainerFolder
             if (type == null)
                 throw new ArgumentNullException("type");
 
-            return ResolveAndCreate(type);
-        }
-
-        //resolve for all implementations
-        public IEnumerable<object> ResolveAll<Tinter>()
-        {
-            var implementations = _instanceRegistry[typeof(Tinter)];
-            List<object> impleList = new List<object>();
-            foreach (var implementation in implementations)
+            //verify the container is registered 
+            if (_instanceRegistry.ContainsKey(type))
             {
-                impleList.Add((Tinter)ResolveAndCreate(typeof(Tinter)));
-            }
-            return impleList;
-        }
-
-        //private void VerifyType(Type type)
-        //{
-        //    if (_instanceRegistry.ContainsKey(type) == true)
-        //    {
-        //        //var registeredHash = _instanceRegistry[type];
-
-        //        if (_instanceRegistry[type].Count() == 1)
-        //        {
-        //            return (type)ResolveAndCreate(typeof(Tinter));
-        //        }
-        //        //Type is not registered, throw exception
-        //        else
-        //        {
-        //            throw new TypeNotRegisteredException(string.Format(
-        //                "The type {0} has not been registered", typeof(Tinter)));
-        //        }
-
-        //    }
-        //    //Type has multiple implementations, throw exception
-        //    else
-        //    {
-        //        throw new MultipleImplementationsException(string.Format(
-        //            "The type {0} has Miltuple implementations ", typeof(Tinter)));
-        //    }
-        //}
-        private object ResolveAndCreate(Type type)
-        {
-            object obj = null;
-
-            if (_instanceRegistry.ContainsKey(type) == true)
-            {
-                var registeredHash = _instanceRegistry[type];
-
-                if (registeredHash.Count() == 1)
+                //make sure there is just one value for the key: one interface for the implementation
+                if (_instanceRegistry[type].Count() == 1)
                 {
-                    foreach (var registered in registeredHash)
-                    {
-                        Type typeToCreate = registered.ObjectType;
-                        //get ctro information so we can create the injected types later
-                        ConstructorInfo[] ctroInfo = typeToCreate.GetConstructors();
-                        //verify if the ctro has any types that need to be instantiated 
-                        var dependentCtor = ctroInfo.FirstOrDefault(item => item.CustomAttributes.FirstOrDefault(attr => attr.AttributeType == typeof(DependencyAttribute)) != null);
-
-                        if (dependentCtor == null)
-                        {
-                            // use the default constructor to create
-                            obj = CreateInstance(registered);
-                        }
-                        else
-                        {
-                            // We found a constructor with dependency attribute
-                            ParameterInfo[] parameters = dependentCtor.GetParameters();
-                            if (parameters.Count() == 0)
-                            {
-                                // Futile dependency attribute, use the default constructor only
-                                obj = CreateInstance(registered);
-                            }
-                            else
-                            {
-                                // valid dependency attribute, create the dependencies first and pass them to the constructor
-                                List<object> arguments = new List<object>();
-                                foreach (var param in parameters)
-                                {
-                                    Type paramType = param.ParameterType;
-                                    arguments.Add(ResolveAndCreate(paramType));
-                                }
-
-                                obj = CreateInstance(registered, arguments.ToArray());
-                            }
-                        }
-                    }
+                    _processingRegistry = new Dictionary<Type, RegisteredType>();
+                    _processingRegistry[type] = _instanceRegistry[type].FirstOrDefault();
+                    return ResolveAndCreate(type);
                 }
                 //Type has multiple implementations, throw exception
                 else
                 {
                     throw new MultipleImplementationsException(string.Format(
-                        "The type {0} has Miltuple implementations ", type.Name));
+                        "The type {0} has Miltuple implementations, Please use ResolveAll ", type.Name));
                 }
             }
             //Type is not registered, throw exception
@@ -199,8 +122,93 @@ namespace IoCContainer.ContainerFolder
                 throw new TypeNotRegisteredException(string.Format(
                     "The type {0} has not been registered", type.Name));
             }
+        }
+
+        //resolve for all implementations
+        public IEnumerable<Type> ResolveAll<Tinter>()
+        {
+            int i = 0;
+            List<Type> impleList = new List<Type>();
+            //verify the container is registered 
+            if (_instanceRegistry.ContainsKey(typeof(Tinter)))
+            {
+                var implementations = _instanceRegistry[typeof(Tinter)];
+                
+                foreach (var implementation in implementations)
+                {
+                    _processingRegistry = new Dictionary<Type, RegisteredType>();
+                    var temp = _instanceRegistry[typeof(Tinter)].ToArray();
+                    _processingRegistry[typeof(Tinter)] = temp[i];
+                    impleList.Add(ResolveAndCreate(typeof(Tinter)).GetType());
+
+                    i++;
+                }
+            }
+            //Type is not registered, throw exception
+            else
+            {
+                throw new TypeNotRegisteredException(string.Format(
+                    "The type {0} has not been registered", typeof(Tinter).Name));
+            }
+            return impleList;
+        }
+
+        private object ResolveAndCreate(Type type)
+        {
+            object obj = null;
+
+            var registered = _processingRegistry[type];
+            Type typeToCreate = registered.ObjectType;
+
+            ConstructorInfo dependentCtor = GetConstructorInfo(typeToCreate); 
+            if (dependentCtor == null)
+            {
+                // use the default constructor to create
+                obj = CreateInstance(registered);
+            }
+            else
+            {
+                //we got some parameter(types)s that need to be created
+                CreateCtro(registered, dependentCtor, out obj);
+            }
 
             return obj;
+        }
+
+        private ConstructorInfo GetConstructorInfo(Type typeToCreate)
+        {
+            //get ctro information so we can create the injected types later
+            ConstructorInfo[] ctroInfo = typeToCreate.GetConstructors();
+
+            //verify if the ctro has any types that need to be instantiated
+            return ctroInfo.FirstOrDefault(
+                item => item.CustomAttributes.FirstOrDefault(
+                    attr => attr.AttributeType == typeof(DependencyAttribute)) != null);
+
+        }
+        //creates ctro and it dendencies if needed.
+        private void CreateCtro(RegisteredType registered, ConstructorInfo dependentCtor, out object obj)
+        {
+            // We found a constructor with dependency attribute
+            ParameterInfo[] parameters = dependentCtor.GetParameters();
+            if (parameters.Count() == 0)
+            {
+                // Futile dependency attribute, use the default constructor only
+                obj = CreateInstance(registered);
+            }
+            else
+            {
+                // valid dependency attribute, create the dependencies first and pass them to the constructor
+                List<object> arguments = new List<object>();
+                foreach (var param in parameters)
+                {
+                    Type paramType = param.ParameterType;
+                    _processingRegistry[paramType] = _instanceRegistry[paramType].FirstOrDefault();
+                    arguments.Add(ResolveAndCreate(paramType));
+                }
+
+                obj = CreateInstance(registered, arguments.ToArray());
+            }
         }
 
         //create the instance dending on the lifecycle type

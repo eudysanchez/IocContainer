@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IocContainer.Tests.Helpers
 {
-    public class Helper2 : IHelper2
+    public class Helper2 : IHelper2, IHelper1
     {
         public void Print()
         {
