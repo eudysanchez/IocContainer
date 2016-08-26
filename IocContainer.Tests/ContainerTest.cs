@@ -79,8 +79,7 @@ namespace IocContainer.Tests
             //Act
             container.Register<IHelper1, Helper1>();
             container.Register<IHelper1, Helper2>();
-            var actualType1 = container.Resolve<IHelper1>();
-            var actualType2 = container.Resolve<IHelper1>();
+            var actualType1 = container.ResolveAll<IHelper1>();
 
             //Assert
             Assert.IsType(help1.GetType(), actualType1);

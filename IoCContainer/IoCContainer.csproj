@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContainerFolder\Container.cs" />
+    <Compile Include="Exceptions\MultipleImplementationsException.cs" />
     <Compile Include="IoCCreationServices\CreationService.cs" />
     <Compile Include="ValueObjects\DependencyAttribute.cs" />
     <Compile Include="ContainerFolder\IContainer.cs" />

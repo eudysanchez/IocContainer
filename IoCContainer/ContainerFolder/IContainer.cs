@@ -1,5 +1,6 @@
 ﻿using IoCContainer.ValueObjects;
 using System;
+using System.Collections.Generic;
 
 namespace IoCContainer.ContainerFolder
 {
@@ -9,5 +10,6 @@ namespace IoCContainer.ContainerFolder
         void Register<Tinter, Timple>(LifeCycle lifeCycle) where Tinter : class where Timple : class;
         T Resolve<T>();
         object Resolve(Type type);
+        IEnumerable<object> ResolveAll<Tinter>();
     }
 }
