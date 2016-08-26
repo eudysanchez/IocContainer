@@ -12,7 +12,7 @@ namespace IoCContainer.ContainerFolder
     public class Container : IContainer
     {
         Dictionary<Type, RegisteredType> _instanceRegistry;
-
+        Dictionary<Type, Dictionary<string, RegisteredType>> _instanceRegistry1 = new Dictionary<Type, Dictionary<string, RegisteredType>>();
         public Container()
         {
             _instanceRegistry = new Dictionary<Type, RegisteredType>();
