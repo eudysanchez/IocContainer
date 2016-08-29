@@ -12,7 +12,7 @@ namespace IoCContainer.ContainerFolder
     public class Container : IContainer
     {
         Dictionary<Type, HashSet<RegisteredType>> _instanceRegistry;//store all containers and all the implementation types
-        Dictionary<Type, RegisteredType> _processingRegistry;//store a specific container and all its implementations temporally
+
         public Container()
         {
             _instanceRegistry = new Dictionary<Type, HashSet<RegisteredType>>();
@@ -23,213 +23,157 @@ namespace IoCContainer.ContainerFolder
             where Tinter : class
             where Timple : class
         {
-            RegisterType<Tinter, Timple>(LifeCycle.Transient);
+            Register(typeof(Tinter), typeof(Timple), LifeCycle.Transient);
         }
 
-        //Let take the lifecyle choosen by the user
+        //take the lifecyle choosen by the user
         public void Register<Tinter, Timple>(LifeCycle lifeCycle)
             where Tinter : class
             where Timple : class
         {
-            RegisterType<Tinter, Timple>(lifeCycle);
-
+            Register(typeof(Tinter), typeof(Timple), lifeCycle);
         }
 
-        /*Using the container as the key, adds type to register and container to the dictionary
-         * deletes entry if type is already in the dictionary
-         * Note: this behavior needs to be updated if we want to allow various implementations to one type  
-         * */
-        private void RegisterType<Tinter, Timple>(LifeCycle lifeCycle)
+        //register type with Transient lifeCycle by default
+        private void Register(Type interfaceType, Type implType)
         {
-            var key = typeof(Tinter);
-            if (_instanceRegistry.ContainsKey(key) == true)
-            {
+            Register(interfaceType, implType, LifeCycle.Transient);
+        }
 
-                _instanceRegistry[key].Add(new RegisteredType
+        //Using the container(interface) as the key, adds type to register and container to the dictionary
+        private void Register(Type interfaceType, Type implType, LifeCycle lifeCycle)
+        {
+            if (interfaceType == null)
+                throw new ArgumentNullException("interfaceType Cant be null");
+            if (implType == null)
+                throw new ArgumentNullException("implType cant be null");
+            if (!interfaceType.IsAssignableFrom(implType))
+                throw new ArgumentException("implType");
+
+            if (_instanceRegistry.ContainsKey(interfaceType))
+            {
+                _instanceRegistry[interfaceType].Add(new RegisteredType
                 {
                     LifeCycle = lifeCycle,
-                    ObjectType = typeof(Timple)
+                    ObjectType = implType
                 });
             }
-
             else
             {
                 var registeredType = new RegisteredType
                 {
                     LifeCycle = lifeCycle,
-                    ObjectType = typeof(Timple)
+                    ObjectType = implType
                 };
 
-                _instanceRegistry.Add(
-                    typeof(Tinter), new HashSet<RegisteredType> { registeredType });
+                _instanceRegistry.Add(interfaceType, new HashSet<RegisteredType> { registeredType });
             }
+        }
+
+        //resolve from type param
+        public Tinter Resolve<Tinter>() where Tinter : class
+        {
+            return (Tinter)Resolve(typeof(Tinter));
         }
 
         //resolve from type
-        public Tinter Resolve<Tinter>()
-        {
-            //verify the container is registered 
-            if (_instanceRegistry.ContainsKey(typeof(Tinter)))
-            {
-                //make sure there is just one value for the key: one interface for the implementation
-                if (_instanceRegistry[typeof(Tinter)].Count() == 1)
-                {
-                    _processingRegistry = new Dictionary<Type, RegisteredType>();
-                    _processingRegistry[typeof(Tinter)] = _instanceRegistry[typeof(Tinter)].FirstOrDefault();
-                    return (Tinter)ResolveAndCreate(typeof(Tinter));
-                }
-                //Type has multiple implementations, throw exception
-                else
-                {
-                    throw new MultipleImplementationsException(string.Format(
-                        "The type {0} has Miltuple implementations, Please use ResolveAll ", typeof(Tinter).Name));
-                }
-
-            }
-            //Type is not registered, throw exception
-            else
-            {
-                throw new TypeNotRegisteredException(string.Format(
-                    "The type {0} has not been registered", typeof(Tinter).Name));
-            }
-        }
-
-        //resolve from parameter
         public object Resolve(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException("type");
 
-            //verify the container is registered 
+            //verify the container is registered
             if (_instanceRegistry.ContainsKey(type))
             {
                 //make sure there is just one value for the key: one interface for the implementation
-                if (_instanceRegistry[type].Count() == 1)
-                {
-                    _processingRegistry = new Dictionary<Type, RegisteredType>();
-                    _processingRegistry[type] = _instanceRegistry[type].FirstOrDefault();
-                    return ResolveAndCreate(type);
-                }
-                //Type has multiple implementations, throw exception
-                else
+                if (_instanceRegistry[type].Count > 1)
                 {
                     throw new MultipleImplementationsException(string.Format(
                         "The type {0} has Miltuple implementations, Please use ResolveAll ", type.Name));
                 }
+
+                return ResolveAndCreate(_instanceRegistry[type].Single());
             }
+
             //Type is not registered, throw exception
-            else
+            throw new TypeNotRegisteredException(string.Format(
+                "The type {0} has not been registered", type.Name));
+        }
+
+        //resolve all from type param
+        public IEnumerable<Tinter> ResolveAll<Tinter>() where Tinter : class
+        {
+            var objects = ResolveAll(typeof(Tinter));
+            foreach (var obj in objects)
             {
-                throw new TypeNotRegisteredException(string.Format(
-                    "The type {0} has not been registered", type.Name));
+                yield return (Tinter)obj;
             }
         }
 
-        //resolve for all implementations
-        public IEnumerable<Type> ResolveAll<Tinter>()
+        //resolve all from type
+        public IEnumerable<object> ResolveAll(Type type)
         {
-            int i = 0;
-            List<Type> impleList = new List<Type>();
-            //verify the container is registered 
-            if (_instanceRegistry.ContainsKey(typeof(Tinter)))
+            if (type == null)
+                throw new ArgumentNullException("type");
+
+            //verify the container is registered
+            if (_instanceRegistry.ContainsKey(type))
             {
-                var implementations = _instanceRegistry[typeof(Tinter)];
-                
+                var implementations = _instanceRegistry[type];
                 foreach (var implementation in implementations)
                 {
-                    _processingRegistry = new Dictionary<Type, RegisteredType>();
-                    var temp = _instanceRegistry[typeof(Tinter)].ToArray();
-                    _processingRegistry[typeof(Tinter)] = temp[i];
-                    impleList.Add(ResolveAndCreate(typeof(Tinter)).GetType());
-
-                    i++;
+                    yield return ResolveAndCreate(implementation);
                 }
             }
+
             //Type is not registered, throw exception
-            else
-            {
-                throw new TypeNotRegisteredException(string.Format(
-                    "The type {0} has not been registered", typeof(Tinter).Name));
-            }
-            return impleList;
+            throw new TypeNotRegisteredException(string.Format(
+                "The type {0} has not been registered", type.Name));
         }
 
-        private object ResolveAndCreate(Type type)
+        private object ResolveAndCreate(RegisteredType registered)
         {
-            object obj = null;
-
-            var registered = _processingRegistry[type];
-            Type typeToCreate = registered.ObjectType;
-
-            ConstructorInfo dependentCtor = GetConstructorInfo(typeToCreate); 
+            ConstructorInfo dependentCtor = GetConstructorInfo(registered.ObjectType);
             if (dependentCtor == null)
             {
                 // use the default constructor to create
-                obj = CreateInstance(registered);
-            }
-            else
-            {
-                //we got some parameter(types)s that need to be created
-                CreateCtro(registered, dependentCtor, out obj);
+                return CreationService.Instance.GetInstance(registered);
             }
 
-            return obj;
+            //we got some parameter(types)s that need to be created
+            return CreateCtor(registered, dependentCtor);
         }
 
         private ConstructorInfo GetConstructorInfo(Type typeToCreate)
         {
-            //get ctro information so we can create the injected types later
-            ConstructorInfo[] ctroInfo = typeToCreate.GetConstructors();
+            //get ctor information so we can create the injected types later
+            ConstructorInfo[] ctorInfo = typeToCreate.GetConstructors();
 
-            //verify if the ctro has any types that need to be instantiated
-            return ctroInfo.FirstOrDefault(
+            //verify if the ctor has any types that need to be instantiated
+            return ctorInfo.FirstOrDefault(
                 item => item.CustomAttributes.FirstOrDefault(
                     attr => attr.AttributeType == typeof(DependencyAttribute)) != null);
-
         }
 
-        //creates ctro and it dendencies if needed.
-        private void CreateCtro(RegisteredType registered, ConstructorInfo dependentCtor, out object obj)
+        //creates ctor and it dendencies if needed.
+        private object CreateCtor(RegisteredType registered, ConstructorInfo dependentCtor)
         {
             // We found a constructor with dependency attribute
             ParameterInfo[] parameters = dependentCtor.GetParameters();
-            if (parameters.Count() == 0)
+            if (parameters.Length == 0)
             {
                 // Futile dependency attribute, use the default constructor only
-                obj = CreateInstance(registered);
+                return CreationService.Instance.GetInstance(registered);
             }
-            else
-            {
-                // valid dependency attribute, create the dependencies first and pass them to the constructor
-                List<object> arguments = new List<object>();
-                foreach (var param in parameters)
-                {
-                    Type paramType = param.ParameterType;
-                    _processingRegistry[paramType] = _instanceRegistry[paramType].FirstOrDefault();
-                    arguments.Add(ResolveAndCreate(paramType));
-                }
 
-                obj = CreateInstance(registered, arguments.ToArray());
+            // valid dependency attribute, create the dependencies first and pass them to the constructor
+            object[] arguments = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                arguments[i] = Resolve(parameters[i].ParameterType);
             }
+
+            return CreationService.Instance.GetInstance(registered, arguments);
         }
-
-        //create the instance dending on the lifecycle type
-        private object CreateInstance(RegisteredType registered, object[] arguments = null)
-        {
-            object returnedObj = null;
-            Type typeToCreate = registered.ObjectType;
-
-            if (registered.LifeCycle == LifeCycle.Transient)
-            {
-                returnedObj = CreationService.GetInstance().GetNewInstance(typeToCreate, arguments);
-            }
-            else if (registered.LifeCycle == LifeCycle.Singleton)
-            {
-                returnedObj = CreationService.GetInstance().GetSingleton(typeToCreate, arguments);
-            }
-
-            return returnedObj;
-        }
-
     }
 }

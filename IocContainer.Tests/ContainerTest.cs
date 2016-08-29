@@ -14,7 +14,7 @@ namespace IocContainer.Tests
     public class ContainerTest
     {
         [Fact]
-        public void RegisterType_CallContainer_TypeRegistered()
+        public void RegisterType_CallContainer_TypesAreRegisteredAndResolved()
         {
             //Arrange
             IContainer container = new Container();
@@ -26,11 +26,25 @@ namespace IocContainer.Tests
 
             //Assert
             Assert.IsType(help1.GetType(), actualType1);
-
         }
 
         [Fact]
-        public void RegisterCompositeType_CallContainer_TypeRegistered()
+        public void RegisterType_CallContainer_TypesAreRegisteredAndResolvedBytype()
+        {
+            //Arrange
+            IContainer container = new Container();
+            IHelper1 help1 = new Helper1();
+
+            //Act
+            container.Register<IHelper1, Helper1>();
+            var actualType1 = container.Resolve(typeof(IHelper1));
+
+            //Assert
+            Assert.IsType(help1.GetType(), actualType1);
+        }
+
+        [Fact]
+        public void RegisterCompositeType_CallContainer_TypesAreRegisteredAndResolved()
         {
             //Arrange
             IContainer container = new Container();
@@ -47,11 +61,30 @@ namespace IocContainer.Tests
 
             //Assert
             Assert.IsType(compositeItem.GetType(), actualType);
-
         }
 
         [Fact]
-        public void RegisterType_TwoDifferentImplementationsTwoDifferentInterfaces_TypesAreRegistered()
+        public void RegisterCompositeType_CallContainer_TypesAreRegisteredAndResolvedbyType()
+        {
+            //Arrange
+            IContainer container = new Container();
+            Helper1 help1 = new Helper1();
+            Helper2 help2 = new Helper2();
+            ICompositeItem compositeItem = new CompositeItem(help1, help2);
+
+
+            //Act
+            container.Register<IHelper1, Helper1>();
+            container.Register<IHelper2, Helper2>();
+            container.Register<ICompositeItem, CompositeItem>();
+            var actualType = container.Resolve(typeof(ICompositeItem));
+
+            //Assert
+            Assert.IsType(compositeItem.GetType(), actualType);
+        }
+
+        [Fact]
+        public void RegisterType_TwoDifferentImplementationsTwoDifferentInterfaces_TypesAreRegisteredAndResolved()
         {
             //Arrange
             IContainer container = new Container();
@@ -71,22 +104,41 @@ namespace IocContainer.Tests
         }
 
         [Fact]
-        public void RegisterType_OneInterfaceTwoDifferentImplementations_TypesAreRegistered()
+        public void RegisterType_OneInterfaceTwoDifferentImplementations_TypesAreRegisteredAndResolvedByTypeParam()
         {
             //Arrange
             IContainer container = new Container();
             IHelper1 help1 = new Helper1();
-            IHelper2 help2 = new Helper2();
+            IHelper1 help2 = new Helper2();
 
             //Act
             container.Register<IHelper1, Helper1>();
             container.Register<IHelper1, Helper2>();
-            IEnumerable<Type> actualTypes = container.ResolveAll<IHelper1>();
+            IEnumerable<IHelper1> actualTypes = container.ResolveAll<IHelper1>();
 
             //Assert
-            IList<Type> list = new List<Type>(actualTypes);
-            Assert.Equal(help1.GetType().FullName, list[0].FullName);
-            Assert.Equal(help2.GetType().FullName, list[1].FullName);
+            //IList<Type> list = new List<Type>(actualTypes);
+            //Assert.Equal(help1.GetType().FullName, actualTypes[0].GetType().FullName);
+            //Assert.Equal(help2.GetType().FullName, actualTypes[1].GetType().FullName);
+        }
+
+        [Fact]
+        public void RegisterType_OneInterfaceTwoDifferentImplementations_TypesAreRegisteredAndResolvedByType()
+        {
+            //Arrange
+            Container container = new Container();
+            IHelper1 help1 = new Helper1();
+            IHelper1 help2 = new Helper2();
+
+            //Act
+            container.Register<IHelper1, Helper1>();
+            container.Register<IHelper1, Helper2>();
+            List<object> actualTypes = container.ResolveAll(typeof(IHelper1)) as List<object>;
+
+            //Assert
+            //IList<Type> list = new List<Type>(actualTypes);
+            Assert.Equal(help1.GetType().FullName, actualTypes[0].GetType().FullName);
+            Assert.Equal(help2.GetType().FullName, actualTypes[1].GetType().FullName);
         }
 
         [Fact]
