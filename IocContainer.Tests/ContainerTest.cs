@@ -7,6 +7,7 @@ using IoCContainer.ValueObjects;
 using System.Reflection.Emit;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IocContainer.Tests
 {
@@ -114,12 +115,12 @@ namespace IocContainer.Tests
             //Act
             container.Register<IHelper1, Helper1>();
             container.Register<IHelper1, Helper2>();
-            List<object> actualTypes = container.ResolveAll(typeof(IHelper1)) as List<object>;
+            List<object> actualTypes = container.ResolveAll(typeof(IHelper1)).ToList();
 
             //Assert
             Assert.NotNull(actualTypes);
-            //Assert.Equal(help1.GetType().FullName, actualTypes[0].GetType().FullName);
-            //Assert.Equal(help2.GetType().FullName, actualTypes[1].GetType().FullName);
+            Assert.Equal(help1.GetType().FullName, actualTypes[0].GetType().FullName);
+            Assert.Equal(help2.GetType().FullName, actualTypes[1].GetType().FullName);
         }
 
         [Fact]
@@ -133,13 +134,12 @@ namespace IocContainer.Tests
             //Act
             container.Register<IHelper1, Helper1>();
             container.Register<IHelper1, Helper2>();
-            List<object> actualTypes = container.ResolveAll(typeof(IHelper1)) as List<object>;
+            List<object> actualTypes = container.ResolveAll(typeof(IHelper1)).ToList() ;
 
             //Assert
-            //IList<Type> list = new List<Type>(actualTypes);
             Assert.NotNull(actualTypes);
-            //Assert.Equal(help1.GetType().FullName, actualTypes[0].GetType().FullName);
-            //Assert.Equal(help2.GetType().FullName, actualTypes[1].GetType().FullName);
+            Assert.Equal(help1.GetType().FullName, actualTypes[0].GetType().FullName);
+            Assert.Equal(help2.GetType().FullName, actualTypes[1].GetType().FullName);
         }
 
         [Fact]

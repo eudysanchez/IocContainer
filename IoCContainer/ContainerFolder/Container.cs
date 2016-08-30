@@ -125,10 +125,12 @@ namespace IoCContainer.ContainerFolder
                     yield return ResolveAndCreate(implementation);
                 }
             }
-
-            //Type is not registered, throw exception
-            throw new TypeNotRegisteredException(string.Format(
-                "The type {0} has not been registered", type.Name));
+            else
+            {
+                //Type is not registered, throw exception
+                throw new TypeNotRegisteredException(string.Format(
+                    "The type {0} has not been registered", type.Name));
+            }
         }
 
         private object ResolveAndCreate(RegisteredType registered)
